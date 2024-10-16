@@ -26,7 +26,7 @@ const fetchYouTubeComments = async (videoId: string, accessToken: string) => {
 };
 
 const EditYouTubeComments = () => {
-  const { user } = useAuth();
+  const { user, signIn } = useAuth();
   const [videoId, setVideoId] = useState('');
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +75,15 @@ const EditYouTubeComments = () => {
       <h1 className="text-3xl font-bold mb-6">Edit Your YouTube Comments</h1>
       
       {!user ? (
-        <p>Please sign in with your YouTube account to edit comments.</p>
+        <div>
+          <p className="mb-4">Please sign in with your YouTube account to edit comments.</p>
+          <Button 
+            onClick={signIn} 
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full text-lg"
+          >
+            Sign in with YouTube
+          </Button>
+        </div>
       ) : (
         <>
           <div className="mb-6">
