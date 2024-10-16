@@ -9,8 +9,11 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 
 const queryClient = new QueryClient()
 
+// Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google Client ID
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
+
 const App = () => (
-  <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
