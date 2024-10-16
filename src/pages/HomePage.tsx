@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   return (
@@ -9,9 +10,11 @@ const HomePage = () => {
           <p className="text-blue-400 mb-4">Make 💬 Comments Conversational</p>
           <h1 className="text-5xl font-bold mb-6">YouTube Bulk Comments Reply</h1>
           <p className="text-xl mb-8">Respond to all comments efficiently, gain audience insights, and increase engagement. AskReply is your YouTube bulk comment reply tool built in 5 free tokens!</p>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg">
-            Boost Your YouTube Engagement Today
-          </Button>
+          <Link to="/edit-comments">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg">
+              Boost Your YouTube Engagement Today
+            </Button>
+          </Link>
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-16">
