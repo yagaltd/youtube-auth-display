@@ -1,36 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from 'axios';
 
-// Function to fetch YouTube comments
-const fetchYouTubeComments = async (videoId, apiKey) => {
+// Function to fetch YouTube comments using OAuth token
+const fetchYouTubeComments = async (videoId, accessToken) => {
   try {
     const response = await axios.get('https://www.googleapis.com/youtube/v3/commentThreads', {
       params: {
         part: 'snippet',
         videoId: videoId,
-        key: apiKey,
         maxResults: 100 // Adjust as needed
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`
       }
     });
     return response.data.items;
   } catch (error) {
     console.error('Error fetching YouTube comments:', error);
-    return [];
+    throw error;
   }
 };
 
 const EditYouTubeComments = () => {
-  const { user, signIn, signOut } = useAuth();
+  const { user } = useAuth();
   const [videoId, setVideoId] = useState('');
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Replace with your actual YouTube API key
-  const YOUTUBE_API_KEY = 'YOUR_YOUTUBE_API_KEY';
 
   const handleFetchComments = async () => {
     if (!videoId) {
@@ -38,14 +37,19 @@ const EditYouTubeComments = () => {
       return;
     }
 
+    if (!user || !user.provider_token) {
+      setError('You need to be signed in with your YouTube account to fetch comments');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const fetchedComments = await fetchYouTubeComments(videoId, YOUTUBE_API_KEY);
+      const fetchedComments = await fetchYouTubeComments(videoId, user.provider_token);
       setComments(fetchedComments);
     } catch (err) {
-      setError('Failed to fetch comments. Please try again.');
+      setError('Failed to fetch comments. Please ensure you have the necessary permissions.');
     } finally {
       setIsLoading(false);
     }
@@ -56,19 +60,8 @@ const EditYouTubeComments = () => {
       <h1 className="text-3xl font-bold mb-6">Edit Your YouTube Comments</h1>
       
       {!user ? (
-        <Button onClick={signIn} className="bg-red-600 hover:bg-red-700 text-white mb-4">
-          Sign in with Supabase
-        </Button>
+        <p>Please sign in with your YouTube account to edit comments.</p>
       ) : (
-        <div className="mb-4">
-          <p>Logged in as: {user.email}</p>
-          <Button onClick={signOut} className="bg-gray-600 hover:bg-gray-700 text-white mt-2">
-            Logout
-          </Button>
-        </div>
-      )}
-      
-      {user && (
         <>
           <div className="mb-6">
             <label htmlFor="videoId" className="block text-sm font-medium text-gray-700 mb-2">
