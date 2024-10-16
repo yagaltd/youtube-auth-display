@@ -1,51 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from "@/contexts/AuthContext";
 import axios from 'axios';
 
 const EditYouTubeComments = () => {
-  const [user, setUser] = useState(null);
-  const [channel, setChannel] = useState(null);
+  const { user, signIn, signOut } = useAuth();
   const [videoId, setVideoId] = useState('');
   const [comments, setComments] = useState([]);
 
-  const login = useGoogleLogin({
-    onSuccess: (codeResponse) => setUser(codeResponse),
-    onError: (error) => console.log('Login Failed:', error),
-    scope: 'https://www.googleapis.com/auth/youtube.force-ssl'
-  });
-
   useEffect(() => {
-    if (user) {
-      axios
-        .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`, {
-          headers: {
-            Authorization: `Bearer ${user.access_token}`,
-            Accept: 'application/json'
-          }
-        })
-        .then((res) => {
-          setChannel(res.data);
-        })
-        .catch((err) => console.log(err));
-    }
+    // You may want to fetch user-specific data here if needed
   }, [user]);
 
   const fetchComments = async () => {
     if (!user || !videoId) return;
 
     try {
+      // This is a placeholder. You'll need to implement the actual YouTube API call
+      // using the user's YouTube credentials, which you'll need to link to their Supabase account
       const response = await axios.get(
-        `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&access_token=${user.access_token}`
+        `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&access_token=YOUR_ACCESS_TOKEN`
       );
       
-      // Filter comments to only include those by the authenticated user
-      const userComments = response.data.items.filter(
-        item => item.snippet.topLevelComment.snippet.authorChannelId.value === channel.id
-      );
-      
-      setComments(userComments);
+      setComments(response.data.items || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -56,13 +34,13 @@ const EditYouTubeComments = () => {
       <h1 className="text-3xl font-bold mb-6">Edit Your YouTube Comments</h1>
       
       {!user ? (
-        <Button onClick={() => login()} className="bg-red-600 hover:bg-red-700 text-white mb-4">
-          Sign in with YouTube
+        <Button onClick={signIn} className="bg-red-600 hover:bg-red-700 text-white mb-4">
+          Sign in with Supabase
         </Button>
       ) : (
         <div className="mb-4">
-          <p>Logged in as: {channel?.name}</p>
-          <Button onClick={() => setUser(null)} className="bg-gray-600 hover:bg-gray-700 text-white mt-2">
+          <p>Logged in as: {user.email}</p>
+          <Button onClick={signOut} className="bg-gray-600 hover:bg-gray-700 text-white mt-2">
             Logout
           </Button>
         </div>
