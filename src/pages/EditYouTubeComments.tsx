@@ -4,28 +4,50 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from 'axios';
 
+// Function to fetch YouTube comments
+const fetchYouTubeComments = async (videoId, apiKey) => {
+  try {
+    const response = await axios.get('https://www.googleapis.com/youtube/v3/commentThreads', {
+      params: {
+        part: 'snippet',
+        videoId: videoId,
+        key: apiKey,
+        maxResults: 100 // Adjust as needed
+      }
+    });
+    return response.data.items;
+  } catch (error) {
+    console.error('Error fetching YouTube comments:', error);
+    return [];
+  }
+};
+
 const EditYouTubeComments = () => {
   const { user, signIn, signOut } = useAuth();
   const [videoId, setVideoId] = useState('');
   const [comments, setComments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // You may want to fetch user-specific data here if needed
-  }, [user]);
+  // Replace with your actual YouTube API key
+  const YOUTUBE_API_KEY = 'YOUR_YOUTUBE_API_KEY';
 
-  const fetchComments = async () => {
-    if (!user || !videoId) return;
+  const handleFetchComments = async () => {
+    if (!videoId) {
+      setError('Please enter a valid YouTube video ID');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
 
     try {
-      // This is a placeholder. You'll need to implement the actual YouTube API call
-      // using the user's YouTube credentials, which you'll need to link to their Supabase account
-      const response = await axios.get(
-        `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&access_token=YOUR_ACCESS_TOKEN`
-      );
-      
-      setComments(response.data.items || []);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
+      const fetchedComments = await fetchYouTubeComments(videoId, YOUTUBE_API_KEY);
+      setComments(fetchedComments);
+    } catch (err) {
+      setError('Failed to fetch comments. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,18 +85,21 @@ const EditYouTubeComments = () => {
           </div>
           
           <Button 
-            onClick={fetchComments} 
+            onClick={handleFetchComments} 
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full text-lg mb-8"
-            disabled={!videoId}
+            disabled={!videoId || isLoading}
           >
-            Fetch Comments
+            {isLoading ? 'Fetching Comments...' : 'Fetch Comments'}
           </Button>
+          
+          {error && <p className="text-red-500 mb-4">{error}</p>}
           
           {comments.length > 0 && (
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comment</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -82,7 +107,10 @@ const EditYouTubeComments = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {comments.map((comment) => (
                     <tr key={comment.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {comment.snippet.topLevelComment.snippet.authorDisplayName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
                         {comment.snippet.topLevelComment.snippet.textDisplay}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
