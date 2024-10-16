@@ -44,9 +44,11 @@ const HomePage = () => {
               <h3 className="text-xl font-semibold mb-2">Export to CSV for deeper analysis</h3>
             </div>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg mt-8">
-            Manage Comments Faster - Try it Free
-          </Button>
+          <div className="flex justify-center mt-8">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg">
+              Manage Comments Faster - Try it Free
+            </Button>
+          </div>
         </section>
 
         <section className="mb-16">
