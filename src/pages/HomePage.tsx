@@ -1,12 +1,26 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+import { useAuth } from "@/contexts/AuthContext";
 
 const HomePage = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
+          {user && (
+            <div className="flex justify-end mb-4">
+              <p className="mr-4">Signed in as: {user.email}</p>
+              <Button 
+                onClick={signOut} 
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm"
+              >
+                Sign Out
+              </Button>
+            </div>
+          )}
           <p className="text-blue-400 mb-4">Make 💬 Comments Conversational</p>
           <h1 className="text-5xl font-bold mb-6">YouTube Bulk Comments Reply</h1>
           <p className="text-xl mb-8">Respond to all comments efficiently, gain audience insights, and increase engagement. AskReply is your YouTube bulk comment reply tool built in 5 free tokens!</p>
