@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from 'axios';
+import { supabase } from '@/lib/supabase';
 
 // Function to fetch YouTube comments using OAuth token
-const fetchYouTubeComments = async (videoId, accessToken) => {
+const fetchYouTubeComments = async (videoId: string, accessToken: string) => {
   try {
     const response = await axios.get('https://www.googleapis.com/youtube/v3/commentThreads', {
       params: {
@@ -30,6 +31,20 @@ const EditYouTubeComments = () => {
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getAccessToken = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
+      setAccessToken(data.session?.provider_token || null);
+    };
+
+    getAccessToken();
+  }, []);
 
   const handleFetchComments = async () => {
     if (!videoId) {
@@ -37,7 +52,7 @@ const EditYouTubeComments = () => {
       return;
     }
 
-    if (!user || !user.provider_token) {
+    if (!accessToken) {
       setError('You need to be signed in with your YouTube account to fetch comments');
       return;
     }
@@ -46,7 +61,7 @@ const EditYouTubeComments = () => {
     setError(null);
 
     try {
-      const fetchedComments = await fetchYouTubeComments(videoId, user.provider_token);
+      const fetchedComments = await fetchYouTubeComments(videoId, accessToken);
       setComments(fetchedComments);
     } catch (err) {
       setError('Failed to fetch comments. Please ensure you have the necessary permissions.');
