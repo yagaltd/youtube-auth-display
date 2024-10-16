@@ -98,7 +98,8 @@ const HomePage = () => {
           <p className="mt-8 text-sm text-gray-400">© 2024 - AskReply.social</p>
           <div className="mt-4">
             <a href="#" className="text-sm text-gray-400 hover:text-white mr-4">Privacy Policy</a>
-            <a href="#" className="text-sm text-gray-400 hover:text-white">Terms of Service</a>
+            <a href="#" className="text-sm text-gray-400 hover:text-white mr-4">Terms of Service</a>
+            <Link to="/edit-comments" className="text-sm text-gray-400 hover:text-white">Edit Your YouTube Comments</Link>
           </div>
         </footer>
       </div>
