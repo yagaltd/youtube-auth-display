@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
+        scopes: 'https://www.googleapis.com/auth/youtube.force-ssl',
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
