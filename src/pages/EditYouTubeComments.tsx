@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from 'axios';
-import { supabase } from "@/integrations/supabase/client";
 
 // Function to fetch YouTube comments using OAuth token
 const fetchYouTubeComments = async (videoId, accessToken) => {
@@ -38,7 +37,7 @@ const EditYouTubeComments = () => {
       return;
     }
 
-    if (!user) {
+    if (!user || !user.provider_token) {
       setError('You need to be signed in with your YouTube account to fetch comments');
       return;
     }
@@ -47,19 +46,10 @@ const EditYouTubeComments = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      
-      const accessToken = data.session?.provider_token;
-      if (!accessToken) {
-        throw new Error('No access token available');
-      }
-
-      const fetchedComments = await fetchYouTubeComments(videoId, accessToken);
+      const fetchedComments = await fetchYouTubeComments(videoId, user.provider_token);
       setComments(fetchedComments);
     } catch (err) {
       setError('Failed to fetch comments. Please ensure you have the necessary permissions.');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }

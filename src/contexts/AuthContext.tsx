@@ -1,25 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/integrations/supabase/client'
+import { User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
 type AuthContextType = {
   user: User | null
-  session: Session | null
   signIn: () => Promise<void>
   signOut: () => Promise<void>
-  getSession: () => Promise<Session | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
-      setSession(session)
     })
 
     return () => {
@@ -35,7 +31,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           access_type: 'offline',
           prompt: 'consent',
         },
-        scopes: 'https://www.googleapis.com/auth/youtube.force-ssl',
       },
     })
   }
@@ -44,17 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut()
   }
 
-  const getSession = async () => {
-    const { data, error } = await supabase.auth.getSession()
-    if (error) {
-      console.error('Error getting session:', error)
-      return null
-    }
-    return data.session
-  }
-
   return (
-    <AuthContext.Provider value={{ user, session, signIn, signOut, getSession }}>
+    <AuthContext.Provider value={{ user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )
