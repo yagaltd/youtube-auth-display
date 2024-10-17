@@ -1,6 +1,5 @@
-// Import from the latest Deno standard library
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // Define CORS headers
 const corsHeaders = {
@@ -25,11 +24,17 @@ serve(async (req) => {
     // Extract the JWT token
     const token = authHeader.replace('Bearer ', '')
 
-    // Create a Supabase client with the Auth context of the logged in user
+    // Create a Supabase client using environment variables
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { 
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false
+        }
+      }
     )
 
     // Verify the JWT token
