@@ -2,9 +2,26 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const HomePage = () => {
   const { user, signOut } = useAuth();
+
+  // Function to handle the "test edge fct" button click
+  const handleTestEdgeFunction = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('add-random-number');
+      
+      if (error) throw error;
+      
+      toast.success('Random number added successfully!');
+      console.log('Response:', data);
+    } catch (error) {
+      toast.error('Error adding random number');
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -24,11 +41,19 @@ const HomePage = () => {
           <p className="text-blue-400 mb-4">Make 💬 Comments Conversational</p>
           <h1 className="text-5xl font-bold mb-6">YouTube Bulk Comments Reply</h1>
           <p className="text-xl mb-8">Respond to all comments efficiently, gain audience insights, and increase engagement. AskReply is your YouTube bulk comment reply tool built in 5 free tokens!</p>
-          <Link to="/edit-comments">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg">
-              Boost Your YouTube Engagement Today
+          <div className="flex justify-center space-x-4">
+            <Link to="/edit-comments">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg">
+                Boost Your YouTube Engagement Today
+              </Button>
+            </Link>
+            <Button 
+              onClick={handleTestEdgeFunction}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg"
+            >
+              Test Edge Fct
             </Button>
-          </Link>
+          </div>
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-16">

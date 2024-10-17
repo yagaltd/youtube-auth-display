@@ -1,1 +1,5 @@
 project_id = "vnhtiudaceojvzlcyvav"
+
+[functions]
+[functions.add-random-number]
+verify_jwt = true
