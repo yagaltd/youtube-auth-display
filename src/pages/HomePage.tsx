@@ -9,31 +9,32 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 const HomePage = () => {
   const { user, signIn, signOut } = useAuth();
 
-  const addRandomNumber = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('No active session');
-    }
 
-    // Generate random number on the frontend
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
+const addRandomNumber = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('No active session');
+  }
 
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-random-number`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ randomNumber }),
-    });
+  // Generate random number on the frontend
+  const randomNumber = Math.floor(Math.random() * 100) + 1;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to add random number');
-    }
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-random-number`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ randomNumber }),
+  });
 
-    return response.json();
-  };
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to add random number');
+  }
+
+  return response.json();
+};
 
   const mutation = useMutation({
     mutationFn: addRandomNumber,

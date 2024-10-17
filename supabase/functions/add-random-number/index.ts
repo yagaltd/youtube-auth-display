@@ -38,6 +38,10 @@ serve(async (req) => {
     // Parse the request body to get the random number
     const { randomNumber } = await req.json()
 
+    if (typeof randomNumber !== 'number' || isNaN(randomNumber)) {
+      throw new Error('Invalid random number provided')
+    }
+
     // Insert the random number into the database
     const { data, error: insertError } = await supabaseClient
       .from('random_numbers')
