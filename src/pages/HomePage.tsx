@@ -4,34 +4,46 @@ import { Link } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 const HomePage = () => {
   const { user, signOut } = useAuth();
 
-  // Function to handle the "test edge fct" button click
-  const handleTestEdgeFunction = async () => {
-    try {
-      // Get the session
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error('No active session');
-      }
-
-      const { data, error } = await supabase.functions.invoke('add-random-number', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-      
-      if (error) throw error;
-      
-      toast.success('Random number added successfully!');
-      console.log('Response:', data);
-    } catch (error) {
-      toast.error('Error adding random number');
-      console.error('Error:', error);
+  const addRandomNumber = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('No active session');
     }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-random-number`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add random number');
+    }
+
+    return response.json();
+  };
+
+  const mutation = useMutation({
+    mutationFn: addRandomNumber,
+    onSuccess: (data) => {
+      toast.success(`Random number ${data.data.number} added successfully!`);
+    },
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`);
+      console.error('Error details:', error);
+    },
+  });
+
+  const handleTestEdgeFunction = () => {
+    mutation.mutate();
   };
 
   return (

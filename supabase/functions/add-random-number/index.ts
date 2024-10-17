@@ -52,6 +52,7 @@ serve(async (req) => {
       .from('random_numbers')
       .insert({ number: randomNumber })
       .select()
+      .single()
 
     if (error) throw error
 
@@ -60,6 +61,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error in add-random-number function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
