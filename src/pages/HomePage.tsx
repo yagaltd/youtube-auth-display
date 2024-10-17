@@ -1,13 +1,12 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Link } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useMutation } from '@tanstack/react-query';
 
 const HomePage = () => {
-  const { user, signOut } = useAuth();
+  const { user, signIn, signOut } = useAuth();
 
   const addRandomNumber = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -37,12 +36,20 @@ const HomePage = () => {
       toast.success(`Random number ${data.data.number} added successfully!`);
     },
     onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+      if (error.message === 'No active session') {
+        toast.error('Please sign in to add a random number');
+      } else {
+        toast.error(`Error: ${error.message}`);
+      }
       console.error('Error details:', error);
     },
   });
 
   const handleTestEdgeFunction = () => {
+    if (!user) {
+      toast.error('Please sign in to add a random number');
+      return;
+    }
     mutation.mutate();
   };
 
@@ -50,7 +57,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
-          {user && (
+          {user ? (
             <div className="flex justify-end mb-4">
               <p className="mr-4">Signed in as: {user.email}</p>
               <Button 
@@ -58,6 +65,15 @@ const HomePage = () => {
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm"
               >
                 Sign Out
+              </Button>
+            </div>
+          ) : (
+            <div className="flex justify-end mb-4">
+              <Button 
+                onClick={signIn} 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm"
+              >
+                Sign In
               </Button>
             </div>
           )}
@@ -73,8 +89,9 @@ const HomePage = () => {
             <Button 
               onClick={handleTestEdgeFunction}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg"
+              disabled={!user || mutation.isPending}
             >
-              Test Edge Fct
+              {mutation.isPending ? 'Adding...' : 'Test Edge Fct'}
             </Button>
           </div>
         </header>
