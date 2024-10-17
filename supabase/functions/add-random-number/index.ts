@@ -14,47 +14,38 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization')
-
-    if (!authHeader) {
-      throw new Error('Missing Authorization header')
-    }
-
-    // Extract the JWT token
-    const token = authHeader.replace('Bearer ', '')
-
-    // Create a Supabase client using environment variables
+    // Create a Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { 
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-          detectSessionInUrl: false
-        }
-      }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { auth: { persistSession: false } }
     )
 
-    // Verify the JWT token
-    const { data: { user }, error: verificationError } = await supabaseClient.auth.getUser(token)
+    // Get the JWT token from the request
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
 
-    if (verificationError || !user) {
+    if (!token) {
+      throw new Error('No token provided')
+    }
+
+    // Verify the JWT token
+    const { data: { user }, error } = await supabaseClient.auth.getUser(token)
+
+    if (error || !user) {
       throw new Error('Invalid token')
     }
 
-    // Generate a random number between 1 and 100
-    const randomNumber = Math.floor(Math.random() * 100) + 1
+    // Parse the request body to get the random number
+    const { randomNumber } = await req.json()
 
     // Insert the random number into the database
-    const { data, error } = await supabaseClient
+    const { data, error: insertError } = await supabaseClient
       .from('random_numbers')
       .insert({ number: randomNumber })
       .select()
       .single()
 
-    if (error) throw error
+    if (insertError) throw insertError
 
     return new Response(
       JSON.stringify({ success: true, data }),
@@ -64,7 +55,7 @@ serve(async (req) => {
     console.error('Error in add-random-number function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   }
 })

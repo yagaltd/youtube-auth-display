@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Add this import
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,12 +15,16 @@ const HomePage = () => {
       throw new Error('No active session');
     }
 
+    // Generate random number on the frontend
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
+
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-random-number`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ randomNumber }),
     });
 
     if (!response.ok) {
